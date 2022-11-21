@@ -8,6 +8,7 @@ import mysql.connector
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 from flask import Flask, request, jsonify
 
+from author import author
 from music import music
 
 app = Flask(__name__)
@@ -15,7 +16,7 @@ app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
 ALLOWED_EXTENSIONS = {'jpg', 'png', 'pdf','jpeg','PNG'}
 
-ALLOWED_EXTENSIONS_doc = {'txt', 'docx'}
+ALLOWED_EXTENSIONS_DOCS = {'txt', 'docx'}
 
 
 def allowed_file(filename):
@@ -56,7 +57,7 @@ def index():
 @app.route('/api/delete/<int:_id>', methods=['GET', 'POST'])
 def delete(_id):
     try:
-        music_item = get_by_id(_id)
+        music_item = get_novel_by_id(_id)
         if music_item:
             pathlib.Path(music_item.data).unlink()
         else:
@@ -71,7 +72,7 @@ def delete(_id):
         })
     # Create the connection object
     myconn = mysql.connector.connect(host="localhost", user="root",
-                                     passwd="", database="music_database")
+                                     passwd="", database="app_novel_database")
     cursor = myconn.cursor()
     try:
         query = "DELETE FROM music WHERE id=%s"
@@ -144,7 +145,7 @@ def upload_img():
             'message': 'File undefined'
         })
 
-
+@app.route('/api/upload', methods=['POST'])
 def upload_text():
     # check if the post request has the file part
     if 'file' not in request.files:
@@ -195,18 +196,18 @@ def upload_text():
 
 
 @app.route('/api/musics', methods=['GET', 'POST'])
-def get():
+def get_all_novel():
     # Create the connection object
     myconn = mysql.connector.connect(host="localhost", user="root",
-                                     passwd="", database="music_database")
+                                     passwd="", database="app_novel_database")
     cursor = myconn.cursor()
-    all_music = []
+    all_novel = []
     try:
-        cursor.execute("SELECT * FROM music")
+        cursor.execute("SELECT * FROM novel")
         result = cursor.fetchall()
         for item in result:
             music_item = music(item[0], item[1], item[2])
-            all_music.append(music_item.toJSON())
+            all_novel.append(music_item.toJSON())
     except Exception as e:
         myconn.rollback()
         cursor.close()
@@ -220,15 +221,15 @@ def get():
     myconn.close()
     return jsonify({
         'success': True,
-        'message': 'Query success ' + str(len(all_music)) + ' song',
-        'music': all_music
+        'message': 'Query success ' + str(len(all_novel)) + ' song',
+        'music': all_novel
     })
 
 
-def get_by_id(_id):
+def get_novel_by_id(_id):
     # Create the connection object
     myconn = mysql.connector.connect(host="localhost", user="root",
-                                     passwd="", database="music_database")
+                                     passwd="", database="app_novel_database")
     cursor = myconn.cursor()
     music_item = None
     try:
@@ -245,6 +246,48 @@ def get_by_id(_id):
     myconn.close()
     return music_item
 
+def add_author():
+    # Create the connection object
+    myconn = mysql.connector.connect(host="localhost", user="root",
+                                     passwd="", database="app_novel_database")
+    cursor = myconn.cursor()
+    all_author = []
+    try:
+        cursor.execute("INSERT INTO author(id,name,introduce) ")
+        result = cursor.fetchall()
+        # for item in result:
+        #     author_item = author(item[0], item[1], item[2])
+        #     all_author.append(author_item.toJSON())
+    except Exception as e:
+        myconn.rollback()
+        cursor.close()
+        myconn.close()
+        return jsonify({
+            'success': False,
+            'message': str(e),
+            'author': []
+        })
+
+def delete_author():
+
+
+def add_novel():
+
+
+def delete_novel():
+
+
+def add_chapter():
+
+def delete_chapter():
+
+
+def login():
+
+def logout():
+
+
+def check_user(): #kiểm tra người dùng đã đăng nhập trước đó hay chưa
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
